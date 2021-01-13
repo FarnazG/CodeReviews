@@ -88,3 +88,29 @@ def draw_route(map_name, route_name):
     cv2.imshow(map_name, layout)
     return layout
 
+
+def replay_route(map_name, route_name):
+    layout_org = cv2.imread(map_name)
+
+    with open(route_name, 'r') as F:
+        L2 = json.loads(F.read())
+    F.close()
+
+    for pos in L2:
+        layout = np.copy(layout_org)
+        x = pos['veh_pos'][0]
+        y = pos['veh_pos'][1]
+        theta = np.deg2rad(pos['veh_pos'][2])
+        cv2.circle(layout, (x, y), 1, (0, 255, 0), -1)
+        end_point = (x + int(30.0 * np.cos(theta)), y + int(30.0 * np.sin(theta)))
+        cv2.arrowedLine(layout, (x, y), end_point, (0, 0, 0), 2)
+
+        plc = pos['point_cloud']
+        for pnt in plc:
+            deg = np.arctan2(pnt[1], pnt[0]) + theta
+            r = np.linalg.norm([pnt[0], pnt[1]])
+            cv2.line(layout, (x, y), (int(x + r * np.cos(deg)), int(y + r * np.sin(deg))), (0, 0, 255), 1)
+
+        cv2.imshow(map_name, layout)
+        cv2.waitKey(33)
+

@@ -69,3 +69,22 @@ def draw_circle(event, x, y, flags, params):
     elif event == cv2.EVENT_LBUTTONUP:
         drawing = False
 
+
+def draw_route(map_name, route_name):
+    layout = cv2.imread(map_name)
+
+    with open(route_name, 'r') as F:
+        L2 = json.loads(F.read())
+    F.close()
+
+    for pos in L2:
+        x = pos['veh_pos'][0]
+        y = pos['veh_pos'][1]
+        theta = np.deg2rad(pos['veh_pos'][2])
+        cv2.circle(layout, (x, y), 1, (0, 255, 0), -1)
+        end_point = (x + int(30.0 * np.cos(theta)), y + int(30.0 * np.sin(theta)))
+        cv2.arrowedLine(layout, (x, y), end_point, (0, 0, 0), 1)
+
+    cv2.imshow(map_name, layout)
+    return layout
+

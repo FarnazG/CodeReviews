@@ -114,3 +114,43 @@ def replay_route(map_name, route_name):
         cv2.imshow(map_name, layout)
         cv2.waitKey(33)
 
+
+collect = 0
+basename = './square003'
+if collect == 1:
+    drawing = False  # true if mouse is pressed
+    position = []
+    mapname = basename + '.png'
+    map_rgb_org = cv2.imread(mapname)
+    map_rgb = np.copy(map_rgb_org)
+    # map_gray = np.copy(np.squeeze(map_rgb[:, :, 0]))
+    cv2.namedWindow(mapname)
+    cv2.setMouseCallback(mapname, draw_circle)
+    cv2.imshow(mapname, map_rgb)
+    wait_for_esc()
+    # removing the first element
+    position.pop(0)
+
+    # saving route and lidar hits
+    # [veh_x_t, veh_y_t, veh_angle_t, [[lidar_hit_x_t_0, lidar_hit_y_t_0, lidar_beam_angle_t_0, lidar_hit_dis_t_0],...]]
+    routename = basename + '.txt'
+    with open(routename, 'w') as F:
+        # Use the json dumps method to write the list to disk
+        F.write(json.dumps(position))
+    F.close()
+
+    # redrawing route
+    final_route = draw_route(mapname, routename)
+    cv2.imwrite(basename + '_route.png', final_route)
+    wait_for_esc()
+    cv2.destroyAllWindows()
+else:
+    # replay route
+    mapname_replay = basename + '.png'
+    routename_replay = basename + '.txt'
+    replay_route(mapname_replay, routename_replay)
+    wait_for_esc()
+    cv2.destroyAllWindows()
+
+
+

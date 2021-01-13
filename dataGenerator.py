@@ -26,3 +26,46 @@ def intersect_lidar_beam(x, y, deg):
             return xr, yr, r
     return x, y, 0
 
+
+def synthetic_lidar_generator(x, y, theta):
+    global map_rgb
+
+    lidar_point_cloud = []
+    for deg in range(theta, 360+theta, 5):
+        xd, yd, d = intersect_lidar_beam(x, y, deg)
+        lidar_point_cloud.append([int(d * np.cos(np.deg2rad(deg-theta))), int(d * np.sin(np.deg2rad(deg-theta)))])
+        cv2.line(map_rgb, (x, y), (xd, yd), (0, 0, 255), 1)
+
+    return lidar_point_cloud
+
+
+# mouse callback function
+def draw_circle(event, x, y, flags, params):
+    global drawing, position, mapname, map_rgb, map_rgb_org
+
+    if event == cv2.EVENT_LBUTTONDOWN:
+        drawing = True
+        veh_dict = {'veh_pos': [x, y, 0.0], 'point_cloud': 0}
+        position.append(veh_dict.copy())
+    elif event == cv2.EVENT_MOUSEMOVE:
+        if drawing is True:
+            last = position[-1]['veh_pos']
+            if np.linalg.norm([x - last[0], y - last[1]]) < 10:
+                return
+
+            # print("norm: ", np.linalg.norm([x - last[0], y - last[1]]))
+            # print("(xt-1,yt-1): (", last[0], ", ", last[1], ") - (x,y): (", x, ",", y, ")")
+
+            theta = np.arctan2(y - last[1], x - last[0])
+            map_rgb = np.copy(map_rgb_org)
+            lidar_point_cloud = synthetic_lidar_generator(x, y, int(np.rad2deg(theta)))
+            start_point = (x, y)
+            end_point = (x + int(30.0 * np.cos(theta)), y + int(30.0 * np.sin(theta)))
+            cv2.arrowedLine(map_rgb, start_point, end_point, (0, 0, 0), 3)
+            cv2.imshow(mapname, map_rgb)
+            veh_dict = {'veh_pos': [x, y, int(np.rad2deg(theta))], 'point_cloud': lidar_point_cloud}
+            position.append(veh_dict.copy())
+            cv2.waitKey(1)
+    elif event == cv2.EVENT_LBUTTONUP:
+        drawing = False
+

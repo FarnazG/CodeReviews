@@ -88,4 +88,20 @@ class OccupancyGrid:
             tmp_conv_map_og1 = coef1 * conv_map1 * map_og1
             conv_map_og1 = tmp_conv_map_og1 / (tmp_conv_map_og0 + tmp_conv_map_og1)
 
+            for i in range(0, len(hit_pnts)):
+                map_og1[hit_pnts[i, 1], hit_pnts[i, 0]] = conv_map_og1[hit_pnts[i, 1], hit_pnts[i, 0]]
+
+            conv_map0 = gaussian_filter(1.0 - map_og1, sigma=sigma0, cval=0.5)
+
+            tmp_conv_map_og0 = coef0 * conv_map0 * (1.0 - map_og1)
+
+            tmp_conv_map_og1 = (coef0 * conv_map0 - (1.0 - map_og1)) * map_og1
+
+            conv_map_og1 = tmp_conv_map_og1 / (tmp_conv_map_og0 + tmp_conv_map_og1)
+
+            for i in range(0, len(beam_pnts)):
+                map_og1[beam_pnts[i, 1], beam_pnts[i, 0]] = conv_map_og1[beam_pnts[i, 1], beam_pnts[i, 0]]
+
+            self.draw_map(t, map_og1)
+
         return map_og1

@@ -40,3 +40,28 @@ class OccupancyGrid:
         state_weights = stats.multivariate_normal(0, 25).pdf(dis)
         return state_weights
 
+    def extract_beam_points(self, yk, state):
+        x = state[0]
+        y = state[1]
+        theta = state[2]
+
+        deg = np.arctan2(yk[:, 1], yk[:, 0]) + np.deg2rad(theta)
+        r = np.linalg.norm([yk[:, 0], yk[:, 1]], axis=0)
+
+        defection_coef = 0.1
+        wr = np.where(np.random.random(len(r)) < defection_coef)
+        r[wr[0]] = r[wr[0]] / 2.0
+
+        c = np.cos(deg)
+        s = np.sin(deg)
+        hit_pnts = np.array([np.asarray(x + r * c, int), np.asarray(y + r * s, int)])
+        beam_pnts = []
+
+        for i in range(0, len(r)):
+            for br in range(0, int(r[i]), 2):
+                xr = x + int(br * c[i])
+                yr = y + int(br * s[i])
+                beam_pnts.append([xr, yr])
+
+        return hit_pnts.transpose(),  np.asarray(beam_pnts, dtype=np.int)
+

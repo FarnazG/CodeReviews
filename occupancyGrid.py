@@ -23,4 +23,20 @@ class OccupancyGrid:
         cv2.imshow('predictions', layout)
         cv2.waitKey(2)
 
- 
+    def transition_state(self, state, state_next):
+   
+        v = 10.0
+
+        x = state[0]
+        y = state[1]
+        theta = state[2]
+
+        c = np.cos(np.deg2rad(theta))
+        s = np.sin(np.deg2rad(theta))
+
+        state_next_est = np.array([x + v * c, y + v * s])
+        state_next_obs = np.squeeze(state_next[0:2])
+        dis = np.linalg.norm([state_next_est - state_next_obs], axis=1)
+        state_weights = stats.multivariate_normal(0, 25).pdf(dis)
+        return state_weights
+

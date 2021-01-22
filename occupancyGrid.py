@@ -65,3 +65,27 @@ class OccupancyGrid:
 
         return hit_pnts.transpose(),  np.asarray(beam_pnts, dtype=np.int)
 
+    def start(self):
+        map_og1 = 0.5 * np.ones(shape=[self.mapH, self.mapW])
+        
+        sigma0 = 1.5
+        coef0 = 1.0 / stats.multivariate_normal(0, sigma0 ** 2).pdf(0.0)
+
+        
+        sigma1 = 2.5
+        coef1 = 1.0 / stats.multivariate_normal(0, sigma1 ** 2).pdf(0.0)
+
+        for t in range(0, self.T - 1):
+            print("t: ", t)
+            yk = self.lpc[t, :, :]
+            state = self.pos[t, :]
+                        
+            hit_pnts, beam_pnts = self.extract_beam_points(yk, state)
+
+            conv_map1 = gaussian_filter(map_og1, sigma=sigma1, cval=0.5)
+
+            tmp_conv_map_og0 = (coef1 * conv_map1 - map_og1) * (1.0 - map_og1)
+            tmp_conv_map_og1 = coef1 * conv_map1 * map_og1
+            conv_map_og1 = tmp_conv_map_og1 / (tmp_conv_map_og0 + tmp_conv_map_og1)
+
+        return map_og1

@@ -22,3 +22,16 @@ class LocalizationParticleFilter:
 
         self.edge_margin = 10
 
+    def draw_predictions(self, particles, weights):
+        self.layout = np.copy(self.layout_org)
+        for k in range(0, particles.shape[0]):
+            cv2.circle(self.layout, (int(particles[k, 0]), int(particles[k, 1])), 1, (255, 0, 0), -1)
+
+        self.state_average.append(np.average(particles[:, 0:2], axis=0, weights=weights))
+
+        for mean_state_k in self.state_average:
+            cv2.circle(self.layout, (int(mean_state_k[0]), int(mean_state_k[1])), 2, (0, 0, 255), -1)
+
+        cv2.imshow('predictions', self.layout)
+        cv2.waitKey(2)
+

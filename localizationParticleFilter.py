@@ -82,4 +82,43 @@ class LocalizationParticleFilter:
 
         return 10*max_range
 
+    def likelihood_func(self, yk, state, variance):
+        x = state[0]
+        y = state[1]
+        theta = state[2]
+        dis_yk = np.linalg.norm(yk, axis=1)
+        dis = []
+        for deg in range(theta, 360 + theta, 5):
+            dis.append(self.intersect_lidar_beam(x, y, deg))
+
+        log_dis_ratio = np.sort(np.abs(np.log(np.asarray(dis) / dis_yk)))
+        likelihood = np.array(log_dis_ratio[0:int(1.0*len(log_dis_ratio))])
+        likelihood = stats.multivariate_normal(0.0, variance).pdf(likelihood)
+
+        
+        return likelihood.mean()
+
+    
+    def hist_resampler(self, particles, weights, new_particle_num, drop_percentage=10):
+        w_percentile = np.percentile(weights, drop_percentage)
+        w = np.asarray(weights / w_percentile, int)
+        wint = w.copy()
+        for i in range(1, len(w)):
+            wint[i] = w[i] + wint[i-1]
+
+        next_particles = np.zeros([new_particle_num, 3])
+        next_weights = np.zeros(new_particle_num)
+        rand_num = np.random.randint(1, wint[len(w) - 1], new_particle_num)
+        print("max number: ", wint[len(w) - 1])
+
+        for i in range(0, new_particle_num):
+            for j in range(0, len(w)):
+                if rand_num[i] <= wint[j]:
+                    next_weights[i] = weights[j]
+                    next_particles[i, :] = particles[j, :]
+                    break
+
+        next_weights = next_weights / next_weights.sum()
+        return next_particles, next_weights
+
  

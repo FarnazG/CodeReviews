@@ -35,3 +35,38 @@ class LocalizationParticleFilter:
         cv2.imshow('predictions', self.layout)
         cv2.waitKey(2)
 
+    def transition_state(self, state, weights):
+    
+        v = 10.0
+
+        x = state[:, 0]
+        y = state[:, 1]
+        theta = state[:, 2]
+
+        rand_theta = np.random.normal(0.0, 60.0, size=state.shape[0])
+        next_weights = weights * stats.multivariate_normal(0, 3600).pdf(rand_theta)
+        next_weights = next_weights / next_weights.sum()
+
+        theta_next = theta + rand_theta
+        theta_next = theta_next.astype(int)
+        theta_next[theta_next < -179] += 360
+        theta_next[180 < theta_next] -= 360
+
+        c = np.cos(np.deg2rad(theta_next))
+        s = np.sin(np.deg2rad(theta_next))
+
+        randn = np.random.normal(0.0, 2.5, size=state.shape[0])  # + np.random.gamma(1, 3, size=state.shape[0])
+        x_next = x + (v + randn) * c
+        x_next = x_next.astype(int)
+        x_next[x_next < self.edge_margin] = self.edge_margin
+        x_next[(self.mapW - self.edge_margin) <= x_next] = self.mapW - self.edge_margin
+
+      
+        y_next = y + (v + randn) * s
+        y_next = y_next.astype(int)
+        y_next[y_next < self.edge_margin] = self.edge_margin
+        y_next[(self.mapH - self.edge_margin) <= y_next] = self.mapH - self.edge_margin
+
+        return np.array([x_next, y_next, theta_next]).transpose(), next_weights
+
+ 

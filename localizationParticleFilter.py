@@ -69,4 +69,17 @@ class LocalizationParticleFilter:
 
         return np.array([x_next, y_next, theta_next]).transpose(), next_weights
 
+    def intersect_lidar_beam(self, x, y, deg):
+        c = np.cos(np.deg2rad(deg))
+        s = np.sin(np.deg2rad(deg))
+        max_range = int(np.linalg.norm([self.mapW, self.mapH]))
+
+        for r in range(1, max_range, 9):
+            xr = x + int(r * c)
+            yr = y + int(r * s)
+            if self.layout_org[yr, xr, 0] == 0:
+                return r
+
+        return 10*max_range
+
  

@@ -23,9 +23,16 @@ def target2d(sample):
 dim = 1
 if dim == 1:
     sams = np.linspace(-5, 5, 500)
-    plt.plot(sams, target(sams), c='orangeelif dim == 2:
+    plt.plot(sams, target(sams), c='orange')
+    samples = sm.Sampler(dim=dim).metropolis_hastings(target=target, niter=2500, nburn=100)
+    plt.hist(samples[0,], bins=100, density=True, linewidth=1)
+    plt.show()
+elif dim == 2:
     X, Y = np.meshgrid(np.linspace(-5, 5, 500), np.linspace(-5, 5, 500))
     Z = np.array([X, Y])
     fig, ax = plt.subplots(1, 2, figsize=(12, 3))
     ax[0].contourf(X, Y, target2d(Z))
+    samples = sm.Sampler(dim=dim).metropolis_hastings(target=target2d, start=-0.5, niter=6000, nburn=100)
+    ax[1].hist2d(samples[0,], samples[1,], bins=100, density=True, linewidth=1, range=[[-5, 5], [-5, 5]])
+    plt.show()
 

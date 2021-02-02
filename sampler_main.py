@@ -36,3 +36,13 @@ elif dim == 2:
     ax[1].hist2d(samples[0,], samples[1,], bins=100, density=True, linewidth=1, range=[[-5, 5], [-5, 5]])
     plt.show()
 
+dim = 0
+if dim == 1:
+    sams = np.linspace(-5, 5, 500)
+    plt.plot(sams, target(sams), c='orange')
+elif dim == 2:
+    X, Y = np.meshgrid(np.linspace(-5, 5, 500), np.linspace(-5, 5, 500))
+    Z = np.array([X, Y])
+    samples, weights = sm.Sampler(dim=dim, coef=20.0).importance(target=target2d, niter=6000, nburn=100)
+    ax[1].hist2d(samples[0,], samples[1,], bins=100, weights=weights, linewidth=1, range=[[-5, 5], [-5, 5]])
+    plt.show()

@@ -11,7 +11,6 @@ def target(sample):
 
 
 def target2d(sample):
-    target_dis = stats.gamma(a=3.99)
-    return target_dis.pdf(sample[0,]) * target_dis.pdf(sample[1,])
-
-
+    target_dis = stats.gamma(a=3.99).pdf(sample[1,])
+    normal_dis = stats.multivariate_normal(0, 1).pdf(sample[0,])
+    return target_dis * normal_dis

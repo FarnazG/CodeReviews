@@ -40,9 +40,14 @@ dim = 0
 if dim == 1:
     sams = np.linspace(-5, 5, 500)
     plt.plot(sams, target(sams), c='orange')
+    samples, weights = sm.Sampler(dim=dim, coef=5.0).importance(target=target, niter=2500, nburn=100)
+    plt.hist(samples[0,], bins=100, weights=weights, density=True, linewidth=1)
+    plt.show()
 elif dim == 2:
     X, Y = np.meshgrid(np.linspace(-5, 5, 500), np.linspace(-5, 5, 500))
     Z = np.array([X, Y])
+    fig, ax = plt.subplots(1, 2, figsize=(12, 3))
+    #ax[0].contourf(X, Y, target2d(Z))
     samples, weights = sm.Sampler(dim=dim, coef=20.0).importance(target=target2d, niter=6000, nburn=100)
     ax[1].hist2d(samples[0,], samples[1,], bins=100, weights=weights, linewidth=1, range=[[-5, 5], [-5, 5]])
     plt.show()
